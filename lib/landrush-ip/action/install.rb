@@ -1,3 +1,5 @@
+require 'vagrant/util/retryable'
+
 module LandrushIp
   module Action
     class Install

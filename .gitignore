@@ -38,3 +38,4 @@ build
 # Other stuff to ignore
 .idea
 .vagrant
+.tool-versions

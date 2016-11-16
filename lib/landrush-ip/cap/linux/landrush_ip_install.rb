@@ -1,4 +1,5 @@
 require 'landrush-ip/cap/linux'
+require 'vagrant/util/retryable'
 
 module LandrushIp
   module Cap
@@ -17,19 +18,21 @@ module LandrushIp
         end
 
         def self.landrush_ip_install(machine)
-          result = ''
-          machine.communicate.execute('uname -mrs') do |type, data|
-            result << data if type == :stdout
-          end
+          retryable :sleep => 2, :tries => 3 do
+            result = ''
+            machine.communicate.execute('uname -mrs') do |type, data|
+              result << data if type == :stdout
+            end
 
-          binary = determine_binary result
+            binary = determine_binary result
 
-          machine.communicate.tap do |comm|
-            host_path  = File.expand_path("util/dist/#{binary}", LandrushIp.source_root)
+            machine.communicate.tap do |comm|
+              host_path  = File.expand_path("util/dist/#{binary}", LandrushIp.source_root)
 
-            comm.upload(host_path, '/tmp/landrush-ip')
-            comm.sudo("mv /tmp/landrush-ip #{LandrushIp::Cap::Linux.binary_path}")
-            comm.sudo("chmod +x #{LandrushIp::Cap::Linux.binary_path}", error_check: false)
+              comm.upload(host_path, '/tmp/landrush-ip')
+              comm.sudo("mv /tmp/landrush-ip #{LandrushIp::Cap::Linux.binary_path}")
+              comm.sudo("chmod +x #{LandrushIp::Cap::Linux.binary_path}", error_check: false)
+            end
           end
         end
       end
